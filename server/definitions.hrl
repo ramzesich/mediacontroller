@@ -1,0 +1,5 @@
+-define(LISTENER_RESTART_TIMES, 10).
+-define(LISTENER_RESTART_SECONDS, 1).
+-define(LISTENER_WORKER_KILL_TIME, 1000).
+-define(TCP_TIMEOUT, infinity).
+-define(TCP_PORT, 8080).

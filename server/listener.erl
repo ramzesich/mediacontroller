@@ -21,7 +21,7 @@ init([]) ->
         {ok, ListenSocket} ->
             spawn(?MODULE, pair_connect, [ListenSocket]);
         {error, Message} ->
-            error_logger:error_msg("Couldn't listen: ~p~n", [Message])
+            error_logger:error_msg("couldn't listen: ~p~n", [Message])
     end,
     {ok, null}.
 
@@ -33,11 +33,11 @@ pair_connect(ListenSocket) ->
             put(socket, Socket),
             process_messages(<<>>);
         {error, closed} ->
-            error_logger:error_msg("Listening socket is closed~n");
+            error_logger:error_msg("listening socket is closed~n");
         {error, timeout} ->
-            error_logger:error_msg("Listening socket timed out~n");
+            error_logger:error_msg("listening socket timed out~n");
         _Whatever ->
-            error_logger:error_msg("The following socket error occured: ~p~n", [_Whatever])
+            error_logger:error_msg("the following socket error occured: ~p~n", [_Whatever])
     end.
 
 
@@ -74,6 +74,8 @@ parse({data, Bin}) ->
             case Action of
                 <<"login">> ->
                     actions:login();
+                <<"logout">> ->
+                    actions:logout();
                 _Whatever ->
                     error_logger:warning_msg("unknown action requested: ~p~n", [_Whatever])
             end

@@ -73,7 +73,7 @@ parse({data, Bin}) ->
             _Params = [list_to_tuple(re:split(Param, <<": ">>)) || Param <- PL],
             case Action of
                 <<"login">> ->
-                    error_logger:info_msg("logging in... ~n");
+                    actions:login();
                 _Whatever ->
                     error_logger:warning_msg("unknown action requested: ~p~n", [_Whatever])
             end

@@ -44,7 +44,6 @@ pair_connect(ListenSocket) ->
 process_messages(Acc) ->
     receive
         {tcp, _Port, Data} ->
-            error_logger:info_msg("received a message: ~p~n", [Data]),
             Parts = re:split(<<Acc/binary, Data/binary>>, "\n\n"),
             if
                 length(Parts) > 1 ->
@@ -76,6 +75,8 @@ parse({data, Bin}) ->
                     actions:login();
                 <<"logout">> ->
                     actions:logout();
+                <<"ping">> ->
+                    actions:ping();
                 _Whatever ->
                     error_logger:warning_msg("unknown action requested: ~p~n", [_Whatever])
             end

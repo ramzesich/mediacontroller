@@ -10,6 +10,6 @@ start() ->
 
 
 init(_FileName) ->
-    Msn = {msn, {messenger, start_link, []}, permanent, ?WORKER_KILL_TIME, worker, [messenger]},
     Lsn = {lsn, {listener, start_link, []}, permanent, ?WORKER_KILL_TIME, worker, [listener]},
-    {ok, {{one_for_all, ?RESTART_TIMES, ?RESTART_SECONDS}, [Msn, Lsn]}}.
+    Msn = {msn, {messenger, start_link, []}, permanent, ?WORKER_KILL_TIME, worker, [messenger]},
+    {ok, {{one_for_all, ?RESTART_TIMES, ?RESTART_SECONDS}, [Lsn, Msn]}}.

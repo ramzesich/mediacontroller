@@ -24,6 +24,8 @@ process() ->
             update(register, From);
         {unregister, From} ->
             update(unregister, From);
+        {ping, From} ->
+            update_time(From);
         {link, Pid} ->
             link(Pid),
             put(linked, true);
@@ -33,11 +35,11 @@ process() ->
         _Unknown ->
             error_logger:warning_msg("unknown message received: ~p~n", [_Unknown])
     after (?MSN_SESSION_SECONDS * 1000) ->
-        error_logger:warning_msg("no messages during past ~p seconds~n", [?MSN_SESSION_SECONDS])
+        error_logger:warning_msg("no messages during last ~p seconds~n", [?MSN_SESSION_SECONDS])
     end,
-    error_logger:info_msg("cleaning the clients list~n"),
-    clean_lists(),
-    error_logger:info_msg("clients: ~p~n", get(clients)),
+    %error_logger:info_msg("cleaning the clients list~n"),
+    %clean_lists(),
+    error_logger:info_msg("clients: ~p~n", [get(clients)]),
     ?MODULE:process().
 
 
@@ -50,10 +52,10 @@ broadcast(Message) ->
 
 update(register, From) ->
     put(clients, [{From, calendar:local_time()} | get(clients)]),
-    error_logger:info_msg("client ~p added; clients list: ~p~n", [From, get(clients)]);
+    error_logger:info_msg("client ~p added~n", [From]);
 update(unregister, From) ->
-    put(clients, proplists:delete(From, get(clients))),
-    error_logger:info_msg("client ~p removed; clients list: ~p~n", [From, get(clients)]).
+    put(clients, proplists:delete(From)),
+    error_logger:info_msg("client ~p removed~n", [From]).
 
 
 update_time(Key) ->

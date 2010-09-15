@@ -77,6 +77,10 @@ parse({data, Bin}) ->
                     actions:logout();
                 <<"ping">> ->
                     actions:ping();
+                <<"play">> ->
+                    actions:play();
+                <<"stop">> ->
+                    actions:stop();
                 _Whatever ->
                     error_logger:warning_msg("unknown action requested: ~p~n", [_Whatever])
             end

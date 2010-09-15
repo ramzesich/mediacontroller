@@ -26,6 +26,10 @@ process() ->
             update(unregister, From);
         {ping, From} ->
             update_time(From);
+        {play, _From} ->
+            broadcast(play);
+        {stop, _From} ->
+            broadcast(stop);
         {link, Pid} ->
             link(Pid),
             put(linked, true);

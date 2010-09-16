@@ -20,16 +20,14 @@ init([]) ->
 
 process() ->
     receive
-        {register, From} ->
-            update(register, From);
-        {unregister, From} ->
-            update(unregister, From);
         {ping, From} ->
-            update_time(From);
-        {play, _From} ->
-            broadcast(play);
-        {stop, _From} ->
-            broadcast(stop);
+            update_client(From);
+        {play, From} ->
+            update_client(From),
+            broadcast_action(play);
+        {stop, From} ->
+            update_client(From),
+            broadcast_action(stop);
         {link, Pid} ->
             link(Pid),
             put(linked, true);
@@ -41,28 +39,20 @@ process() ->
     after (?MSN_SESSION_SECONDS * 1000) ->
         error_logger:warning_msg("no messages during last ~p seconds~n", [?MSN_SESSION_SECONDS])
     end,
-    %error_logger:info_msg("cleaning the clients list~n"),
-    %clean_lists(),
+    error_logger:info_msg("cleaning the clients list~n"),
+    clean_lists(),
     error_logger:info_msg("clients: ~p~n", [get(clients)]),
     ?MODULE:process().
 
 
-broadcast(Message) ->
-    Send = fun({{Pid, _Id}, _}) ->
-        Pid ! Message
+broadcast_action(Message) ->
+    Send = fun({Pid, _Timestamp}) ->
+        Pid ! {action, atom_to_binary(Message, utf8)}
     end,
     lists:map(Send, get(clients)).
 
 
-update(register, From) ->
-    put(clients, [{From, calendar:local_time()} | get(clients)]),
-    error_logger:info_msg("client ~p added~n", [From]);
-update(unregister, From) ->
-    put(clients, proplists:delete(From)),
-    error_logger:info_msg("client ~p removed~n", [From]).
-
-
-update_time(Key) ->
+update_client(Key) ->
     put(clients, [{Key, calendar:local_time()} | proplists:delete(Key, get(clients))]).
 
 

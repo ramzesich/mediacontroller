@@ -35,7 +35,7 @@ pair_connect(ListenSocket) ->
         {error, closed} ->
             error_logger:error_msg("listening socket is closed~n");
         {error, timeout} ->
-            error_logger:error_msg("listening socket timed out~n");
+            error_logger:error_msg("listening socket has timed out~n");
         _Whatever ->
             error_logger:error_msg("the following socket error occured: ~p~n", [_Whatever])
     end.
@@ -57,6 +57,9 @@ process_messages(Acc) ->
                     error_logger:warning_msg("something terrible happened while parsing the following message: ~p~n", [Parts]),
                     ?MODULE:process_messages(<<>>)
             end;
+        {action, Message} ->
+            gen_tcp:send(get(socket), <<Message/binary, "\n\n">>),
+            ?MODULE:process_messages(<<>>);
         _Whatever ->
             error_logger:warning_msg("some garbage arrived: ~p~n", [_Whatever]),
             ?MODULE:process_messages(<<>>)
@@ -71,10 +74,6 @@ parse({data, Bin}) ->
             [Action | PL] = List,
             _Params = [list_to_tuple(re:split(Param, <<": ">>)) || Param <- PL],
             case Action of
-                <<"login">> ->
-                    actions:login();
-                <<"logout">> ->
-                    actions:logout();
                 <<"ping">> ->
                     actions:ping();
                 <<"play">> ->

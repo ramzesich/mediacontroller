@@ -1,0 +1,7 @@
+MAIN_FRAME_SIZE = (200, 100)
+CONTROL_BUTTON_SIZE = (50, 50)
+BITMAP_BUTTON_SIZE = (40, 40)
+PLAYERS = {
+    'VLC': {},
+    'MPC': {},
+}

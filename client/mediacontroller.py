@@ -1,6 +1,5 @@
-from main_frame import MainFrame
+from engine import MainFrame
 
-import sys
 import wx
 
 

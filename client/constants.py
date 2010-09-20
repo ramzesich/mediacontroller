@@ -13,6 +13,12 @@ SERVER_DIALOG_INPUT_SIZE = (180, wx.DefaultSize.GetHeight())
 SQLITE_DB = 'settings.db'
 
 PLAYERS = {
-    'VLC': {},
-    'MPC': {},
+    'VLC': {
+        'play': 'play_code',
+        'stop': 'stop_code',
+    },
+    'MPC': {
+        'play': 'play_code',
+        'stop': 'stop_code',
+    },
 }

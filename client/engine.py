@@ -180,7 +180,15 @@ class MainFrame(wx.Frame):
         self.communicator.start()
     
     def Communicate(self):
-        print "trololo"
+        while True:
+            if not self.socket:
+                break
+            data = self.socket.recv(1024)
+            if not data:
+                break
+            data = data.replace('\n', '')
+            if self.player in const.PLAYERS.keys() and data in const.PLAYERS[self.player]:
+                pass
     
     def OnPlay(self, event):
         self.Play()
@@ -226,6 +234,7 @@ class MainFrame(wx.Frame):
     
     def Quit(self):
         self.socket.close()
+        self.communicator.terminate()
         self.tbicon.RemoveIcon()
         self.Destroy()
 

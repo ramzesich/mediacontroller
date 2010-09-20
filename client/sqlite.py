@@ -9,7 +9,7 @@ class SQLite:
         
         self.cursor.execute("""
             create table if not exists settings
-            (id integer, server text, player text)
+            (id integer, server text, player text, online boolean)
         """)
         self.db.commit()
         self.cursor.execute("""
@@ -19,10 +19,11 @@ class SQLite:
             v_id = 1
             v_server = ''
             v_player = len(const.PLAYERS.keys()) > 0 and const.PLAYERS.keys()[0] or ''
+            v_online = False
             self.cursor.execute("""
-                insert into settings (id, server, player)
-                values (?, ?, ?)
-            """, (v_id, v_server, v_player))
+                insert into settings (id, server, player, online)
+                values (?, ?, ?, ?)
+            """, (v_id, v_server, v_player, v_online))
             self.db.commit()
     
     def SetServer(self, server):
@@ -36,6 +37,12 @@ class SQLite:
     
     def GetPlayer(self):
         return self.GetField('player')
+    
+    def SetOnline(self, online):
+        self.SetField('online', online)
+    
+    def GetOnline(self):
+        return self.GetField('online')
     
     def SetField(self, field, value):
         self.cursor.execute("""

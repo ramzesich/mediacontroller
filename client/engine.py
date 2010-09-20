@@ -108,7 +108,7 @@ class MainFrame(wx.Frame):
         self.player = self.storage.GetPlayer()
         self.server = self.storage.GetServer()
         self.socket = None
-        self.communicator = None
+        self.listener = None
         
         self.SetIcon(wx.Icon(const.LOGO_ICON, wx.BITMAP_TYPE_PNG))
         self.tbicon = wx.TaskBarIcon()
@@ -121,7 +121,7 @@ class MainFrame(wx.Frame):
         self.CreateMenuBar()
         self.CreateControls()
         self.SetLayout()
-        self.ServerConnect()
+        self.OnToggleOnline(None)
     
     def CreateMenuBar(self):
         menu = wx.MenuBar()
@@ -150,45 +150,58 @@ class MainFrame(wx.Frame):
         self.SetMenuBar(menu)
     
     def CreateControls(self):
+        self.check_online = wx.CheckBox(self.panel, -1, "Online")
+        self.check_online.SetValue(self.storage.GetOnline())
         self.button_play = wx.Button(self.panel, -1, "Play / Pause", size = const.BUTTON_SIZE)
         self.button_stop = wx.Button(self.panel, -1, "Stop", size = const.BUTTON_SIZE)
         
+        self.check_online.Bind(wx.EVT_CHECKBOX, self.OnToggleOnline)
         self.button_play.Bind(wx.EVT_BUTTON, self.OnPlay)
         self.button_stop.Bind(wx.EVT_BUTTON, self.OnStop)
     
     def SetLayout(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox_1 = wx.BoxSizer(wx.HORIZONTAL)
+        hbox_2 = wx.BoxSizer(wx.HORIZONTAL)
         
-        hbox.Add(self.button_play, 0, wx.ALIGN_CENTER | wx.ALL, 4)
-        hbox.Add(self.button_stop, 0, wx.ALIGN_CENTER | wx.ALL, 4)
-        vbox.Add(hbox, 0, wx.ALIGN_CENTER)
+        hbox_1.Add(self.check_online, 0, wx.ALL, 4)
+        hbox_2.Add(self.button_play, 0, wx.ALIGN_CENTER | wx.LEFT | wx.RIGHT | wx.BOTTOM, 4)
+        hbox_2.Add(self.button_stop, 0, wx.ALIGN_CENTER | wx.LEFT | wx.RIGHT | wx.BOTTOM, 4)
+        vbox.Add(hbox_1)
+        vbox.Add(hbox_2, 0, wx.ALIGN_CENTER)
         
         self.panel.SetSizer(vbox)
         self.Layout()
         self.Centre()
         self.Show()
     
-    def ServerConnect(self):
-        try:
-            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.socket.connect((self.server, const.PORT))
-        except socket.error, msg:
-            return
-        
-        self.communicator = Process(target = self.Communicate)
-        self.communicator.start()
-    
-    def Communicate(self):
+    def Listen(self):
         while True:
             if not self.socket:
                 break
             data = self.socket.recv(1024)
             if not data:
                 break
-            data = data.replace('\n', '')
-            if self.player in const.PLAYERS.keys() and data in const.PLAYERS[self.player]:
-                pass
+            self.PlayerAction(data.replace('\n', ''))
+    
+    def OnToggleOnline(self, event):
+        online = self.check_online.IsChecked()
+        self.storage.SetOnline(online)
+        
+        if self.listener:
+            self.listener.terminate()
+            if self.socket:
+                self.socket.close()
+        
+        if online:
+            try:
+                self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.socket.connect((self.server, const.PORT))
+            except socket.error, msg:
+                self.check_online.SetValue(False)
+                return
+            self.listener = Process(target = self.Listen)
+            self.listener.start()
     
     def OnPlay(self, event):
         self.Play()
@@ -229,12 +242,18 @@ class MainFrame(wx.Frame):
         if self.socket:
             self.socket.send(const.STOP_ACTION)
     
+    def PlayerAction(self, data):
+        if self.player in const.PLAYERS.keys() and data in const.PLAYERS[self.player]:
+            print const.PLAYERS[self.player][data]
+    
     def ToggleShown(self):
         self.Show(not self.IsShown())
     
     def Quit(self):
-        self.socket.close()
-        self.communicator.terminate()
+        if self.socket:
+            self.socket.close()
+        if self.listener:
+            self.listener.terminate()
         self.tbicon.RemoveIcon()
         self.Destroy()
 

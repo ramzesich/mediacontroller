@@ -60,6 +60,8 @@ process_messages(Acc) ->
         {action, Message} ->
             gen_tcp:send(get(socket), <<Message/binary, "\n\n">>),
             ?MODULE:process_messages(<<>>);
+        {tcp_closed, Port} ->
+            error_logger:info_msg("port ~p was closed remotely~n", [Port]);
         _Whatever ->
             error_logger:warning_msg("some garbage arrived: ~p~n", [_Whatever]),
             ?MODULE:process_messages(<<>>)

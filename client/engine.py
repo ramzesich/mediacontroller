@@ -1,20 +1,20 @@
 from multiprocessing import Process
 from sqlite import SQLite
 
-import constants as const
+import common
 import socket
 import wx
 
 
 class ServerDialog(wx.Frame):
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent, -1, title = "Server", size = const.SERVER_DIALOG_SIZE, style = wx.FRAME_FLOAT_ON_PARENT | wx.CAPTION | wx.FRAME_TOOL_WINDOW)
+        wx.Frame.__init__(self, parent, -1, title = "Server", size = common.SERVER_DIALOG_SIZE, style = wx.FRAME_FLOAT_ON_PARENT | wx.CAPTION | wx.FRAME_TOOL_WINDOW)
         
         self.panel = wx.Panel(self, -1)
         self.parent = parent
         
         self.label_server = wx.StaticText(self.panel, -1, "Server domain to connect to")
-        self.input_server = wx.TextCtrl(self.panel, -1, size = const.SERVER_DIALOG_INPUT_SIZE)
+        self.input_server = wx.TextCtrl(self.panel, -1, size = common.SERVER_DIALOG_INPUT_SIZE)
         self.input_server.SetValue(self.parent.storage.GetServer())
         self.button_ok = wx.Button(self.panel, wx.ID_OK, "OK")
         self.button_cancel = wx.Button(self.panel, wx.ID_CANCEL, "Cancel")
@@ -101,7 +101,7 @@ class TaskBarMenu(wx.Menu):
 
 class MainFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, None, -1, "Media Controller", size = const.MAIN_FRAME_SIZE, style = wx.CAPTION | wx.CLOSE_BOX)
+        wx.Frame.__init__(self, None, -1, "Media Controller", size = common.MAIN_FRAME_SIZE, style = wx.CAPTION | wx.CLOSE_BOX)
         
         self.panel = wx.Panel(self, -1)
         self.storage = SQLite()
@@ -110,9 +110,9 @@ class MainFrame(wx.Frame):
         self.socket = None
         self.listener = None
         
-        self.SetIcon(wx.Icon(const.LOGO_ICON, wx.BITMAP_TYPE_PNG))
+        self.SetIcon(wx.Icon(common.LOGO_ICON, wx.BITMAP_TYPE_PNG))
         self.tbicon = wx.TaskBarIcon()
-        self.tbicon.SetIcon(wx.Icon(const.TRAY_LOGO_ICON, wx.BITMAP_TYPE_XPM), "Media Controller")
+        self.tbicon.SetIcon(wx.Icon(common.TRAY_LOGO_ICON, wx.BITMAP_TYPE_XPM), "Media Controller")
         self.tbicon.Bind(wx.EVT_TASKBAR_RIGHT_DOWN, self.OnTaskBarRight)
         self.tbicon.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.OnTaskBarLeft)
         
@@ -128,7 +128,7 @@ class MainFrame(wx.Frame):
         settings = wx.Menu()
         
         player = wx.Menu()
-        for item in const.PLAYERS.keys():
+        for item in common.PLAYERS.keys():
             menu_item = wx.MenuItem(player, wx.NewId(), item, kind = wx.ITEM_RADIO)
             player.AppendItem(menu_item)
             if item == self.player:
@@ -152,8 +152,8 @@ class MainFrame(wx.Frame):
     def CreateControls(self):
         self.check_online = wx.CheckBox(self.panel, -1, "Online")
         self.check_online.SetValue(self.storage.GetOnline())
-        self.button_play = wx.Button(self.panel, -1, "Play / Pause", size = const.BUTTON_SIZE)
-        self.button_stop = wx.Button(self.panel, -1, "Stop", size = const.BUTTON_SIZE)
+        self.button_play = wx.Button(self.panel, -1, "Play / Pause", size = common.BUTTON_SIZE)
+        self.button_stop = wx.Button(self.panel, -1, "Stop", size = common.BUTTON_SIZE)
         
         self.check_online.Bind(wx.EVT_CHECKBOX, self.OnToggleOnline)
         self.button_play.Bind(wx.EVT_BUTTON, self.OnPlay)
@@ -196,7 +196,7 @@ class MainFrame(wx.Frame):
         if online:
             try:
                 self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.socket.connect((self.server, const.PORT))
+                self.socket.connect((self.server, common.PORT))
             except socket.error, msg:
                 self.check_online.SetValue(False)
                 return
@@ -216,6 +216,7 @@ class MainFrame(wx.Frame):
             return
         self.player = player
         self.storage.SetPlayer(player)
+        self.OnToggleOnline(None)
     
     def OnServerMenu(self, event):
         ServerDialog(self).Show()
@@ -236,15 +237,17 @@ class MainFrame(wx.Frame):
     
     def Play(self):
         if self.socket:
-            self.socket.send(const.PLAY_ACTION)
+            self.socket.send(common.PLAY_ACTION)
     
     def Stop(self):
         if self.socket:
-            self.socket.send(const.STOP_ACTION)
+            self.socket.send(common.STOP_ACTION)
     
     def PlayerAction(self, data):
-        if self.player in const.PLAYERS.keys() and data in const.PLAYERS[self.player]:
-            print const.PLAYERS[self.player][data]
+        #try:
+            common.PLAYERS[self.player][data]()
+        #except:
+        #    return
     
     def ToggleShown(self):
         self.Show(not self.IsShown())

@@ -1,10 +1,10 @@
-import constants as const
+import common
 import sqlite3
 
 
 class SQLite:
     def __init__(self):
-        self.db = sqlite3.connect(const.SQLITE_DB)
+        self.db = sqlite3.connect(common.SQLITE_DB)
         self.cursor = self.db.cursor()
         
         self.cursor.execute("""
@@ -18,7 +18,7 @@ class SQLite:
         if not self.cursor.fetchall():
             v_id = 1
             v_server = ''
-            v_player = len(const.PLAYERS.keys()) > 0 and const.PLAYERS.keys()[0] or ''
+            v_player = len(common.PLAYERS.keys()) > 0 and common.PLAYERS.keys()[0] or ''
             v_online = False
             self.cursor.execute("""
                 insert into settings (id, server, player, online)

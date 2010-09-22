@@ -188,11 +188,15 @@ class MainFrame(wx.Frame):
     
     def Ping(self):
         while True:
-            if not self.socket:
-                self.check_online.SetValue(False)
-                self.OnToggleOnline(None)
-            self.socket.send(common.PING_ACTION)
-            time.sleep(common.SECONDS_TO_SLEEP)
+            try:
+                self.socket.send(common.PING_ACTION)
+            except:
+                break
+            time.sleep(common.PING_INTERVAL)
+    
+    def GoOffline(self):
+        self.check_online.SetValue(False)
+        self.OnToggleOnline(None)
     
     def OnToggleOnline(self, event):
         online = self.check_online.IsChecked()
@@ -207,7 +211,12 @@ class MainFrame(wx.Frame):
         if online:
             try:
                 self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.socket.connect((self.server, common.PORT))
+                conn_data = self.server.split(':')
+                try:
+                    port = int(conn_data[1])
+                except:
+                    port = common.PORT
+                self.socket.connect((conn_data[0], port))
                 self.tbicon.SetIcon(wx.Icon(common.TRAY_LOGO_ONLINE_ICON, wx.BITMAP_TYPE_XPM), "Media Controller")
             except socket.error, msg:
                 self.check_online.SetValue(False)
@@ -266,8 +275,6 @@ class MainFrame(wx.Frame):
                 common.PLAYERS[self.player][data]()
             except:
                 return
-        elif data == "pong":
-            print "pong"
     
     def ToggleShown(self):
         self.Show(not self.IsShown())
@@ -276,7 +283,8 @@ class MainFrame(wx.Frame):
         if self.socket:
             self.socket.close()
         for process in [self.listener, self.pinger]:
-            process.terminate()
+            if process:
+                process.terminate()
         self.tbicon.RemoveIcon()
         self.Destroy()
 

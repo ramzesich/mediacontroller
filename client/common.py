@@ -5,7 +5,7 @@ PORT = 6666
 PLAY_ACTION = "play\n\n"
 STOP_ACTION = "stop\n\n"
 PING_ACTION = "ping\n\n"
-SECONDS_TO_SLEEP = 10
+PING_INTERVAL = 10
 
 LOGO_ICON = 'images/logo.png'
 TRAY_LOGO_ICON = 'images/logo.xpm'

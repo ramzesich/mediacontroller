@@ -26,12 +26,12 @@ def _http_request(host, method, uri):
     conn.close()
 
 def vlc_play():
-    #_http_request('localhost:8080', 'GET', '/requests/status.xml?command=pl_pause')
-    print "vlc play"
+    _http_request('localhost:8080', 'GET', '/requests/status.xml?command=pl_pause')
+    #print "vlc play"
 
 def vlc_stop():
-    #_http_request('localhost:8080', 'GET', '/requests/status.xml?command=pl_stop')
-    print "vlc stop"
+    _http_request('localhost:8080', 'GET', '/requests/status.xml?command=pl_stop')
+    #print "vlc stop"
 
 def mpc_play():
     print "mpc play"
